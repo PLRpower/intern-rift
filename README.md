@@ -1,87 +1,100 @@
-# Intern Rift
+# Intern Rift - Web4All Platform
 
-Intern Rift la faille qui vous mènera à la réussite.
+Intern Rift is a comprehensive, centralized web platform. Born from the need to streamline the internship search process, this platform bridges the gap between students seeking professional experiences and companies offering valuable opportunities. 
 
-## Prérequis
+This project was conceived and developed to provide an intuitive, secure, and robust environment for all stakeholders involved in the internship journey.
 
-- Serveur Apache
-- PHP 8.0 ou supérieur
-- Composer
-- Base de donnée MySQL
-- Réécriture d'URL activée (```sudo a2enmod rewrite```)
-- Extensions :
-    - php-xml (pour Twig)
-    - php-mysql (pour PDO)
-    - php-cli, php-curl, unzip, curl (pour Composer)
-    - php-mbstring (pour PHPUnit)
+## Context & Objectives
 
-## Installation
+Finding the right internship can be a daunting process. The goal of "Intern Rift" (internally referred to as the Web4All project) is to eliminate friction by centralizing offers, company data, and student applications in one accessible portal. 
 
-### 1. Clonez ce projet :
+Key objectives include:
+- Providing a tailored experience for three distinct user roles: Administrators, Program Coordinators (Pilotes), and Students.
+- Enabling seamless management of companies and internship offers.
+- Facilitating direct applications with CV and cover letter uploads.
+- Offering administrative dashboards to track student progress and platform metrics.
 
-```bash
-git clone https://github.com/PLRPower/ProjetWeb.git
-```
+## Technical Stack
 
-### 2. Installez les dépendances PHP via Composer :
+The platform is built on a solid, modern, and highly customized technical foundation adhering strictly to OOP and PSR-12 standards:
 
-```bash
-composer install
-```
+- **Backend Logic**: PHP 8+ driven by a custom Model-View-Controller (MVC) architecture.
+- **Templating Engine**: Twig, ensuring clean separation of logic and presentation.
+- **Database & ORM**: MySQL integrated with Illuminate/Database (Eloquent ORM) for expressive and secure database interactions.
+- **Frontend**: HTML5, CSS3, and Vanilla JavaScript, ensuring a fully responsive and accessible user interface.
+- **Dependency Management**: Composer for autoloading and managing external packages.
 
-### 3. Créez la base de donnée
+## Architectural Overview
 
-Exécutez la commande suivante pour ouvrir MySQL en mode administrateur :
+The application follows a strict MVC design pattern, entirely custom-built to maximize performance and maintainability.
 
-```bash
-sudo mysql
-```
+- **Routing (`index.php`)**: Acts as the single entry point, efficiently dispatching requests to the appropriate controllers based on the URL.
+- **Controllers (`src/Controllers`)**: Contain the core business logic. Dedicated controllers manage specific domains such as `OfferController`, `CompaniesController`, and `ApplicationController`.
+- **Models (`src/Models`)**: Leverage Eloquent ORM to map directly to database tables. Relationships such as `BelongsTo` and `HasMany` are strictly defined here.
+- **Views (`src/Views`)**: Organized into layouts, components, and pages using Twig templates, ensuring reusable and secure rendering.
+- **Utils (`src/Utils`)**: Contains centralized helper classes for Authentication, Input Validation, Pagination, and Search logic.
 
-Ensuite, exécutez le script SQL ci-dessous pour créer l'utilisateur et la base de données pour le projet :
+## Key Features
 
-```sql
-CREATE
-USER 'admin_intern_rift'@'localhost' IDENTIFIED BY 'IJ*23ioo8932JN';
-CREATE
-DATABASE intern_rift;
-GRANT ALL PRIVILEGES ON intern_rift.* TO
-'admin_intern_rift'@'localhost';
-FLUSH
-PRIVILEGES;
-```
+### Role-Based Access Control (RBAC)
+The platform dynamically adapts its interface and capabilities based on the authenticated user:
+- **Administrators**: Full system oversight.
+- **Program Coordinators (Pilotes)**: Can manage students, companies, and internship offers.
+- **Students**: Can search for offers, manage their wishlist, and submit applications.
 
-> Note : si vous modifiez les informations du script SQL, n'oubliez pas de mettre à jour le fichier
-> /database/database.php
+### Company Management
+Coordinators and Admins can create, read, update, and delete (CRUD) company profiles. The system also supports a rating and evaluation mechanism, allowing stakeholders to review companies based on past internship experiences.
 
-### 4. Exécutez les migrations pour créer les tables nécessaires :
+### Internship Offer Management
+Offers are tied to specific companies and include detailed metadata (duration, remuneration, location, required skill level). The platform features a robust search engine allowing users to filter offers and companies seamlessly.
 
-```bash
-composer migrate
-```
+### Application & Wishlist System
+Students can curate a personalized wishlist of interesting offers. When ready, they can apply directly through the platform by uploading their CV and writing a customized cover letter. The system tracks the application status ("en attente", "accepté", "refusé").
 
-## Développement
+### Dashboard & Statistics
+A dedicated dashboard provides real-time insights into student statuses, giving coordinators immediate visibility into how many students have secured an internship, are currently searching, or have completed their requirements.
 
-Les fichiers source du projet se trouvent dans le dossier src. Les contrôleurs, modèles et vues sont organisés comme
-suit :
+## Database Design
 
-- Controllers : Logique de gestion des requêtes et des réponses.
-- Models : Interaction avec la base de données.
-- Views : Templates de présentation (utilise Twig comme moteur de templates).
+The database schema is highly relational and enforced through PHP-based migrations (`database/migrations`). Key tables include:
+- `users` (base authentication) linked to `admins`, `teachers` (pilotes), and `students`.
+- `companies` linked to `evaluations`.
+- `offers` linked to `companies`.
+- `applications` acting as a pivot table linking `students` and `offers` with additional metadata (CV paths, cover letters, application status).
+- `wishlists` linking `students` to their saved `offers`.
 
-## Tests & génération de données
+Foreign key constraints and cascade deletions are strictly implemented to guarantee data integrity.
 
-Les tests permettent de vérifier le bon fonctionnement de l'application et de générer des données test dans la base de
-données. Vous pouvez exécuter les tests avec PHPUnit :
+## Security Measures
 
-```bash
-composer test
-```
+Security was a non-negotiable constraint during development. The following best practices are enforced:
+- **Protection against SQL Injection**: All database queries are executed using Eloquent ORM, which inherently uses prepared statements and parameter binding.
+- **Cross-Site Scripting (XSS) Prevention**: All user inputs are sanitized using a custom `InputValidator` (utilizing `htmlspecialchars`, `strip_tags`, and specific filters) before processing or rendering.
+- **Role Verification**: Controller methods enforce strict role checking (`Auth::checkRole()`) before executing sensitive actions or rendering administrative views.
+- **Secure File Uploads**: CV uploads are securely handled, renamed with unique identifiers (`uniqid()`), and stored safely within the server infrastructure.
 
-## Créé par
+## Installation & Setup
 
-Le groupe n°2 de la promo CPI A2 Info 2024-2025 du CESI :
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/PLRPower/ProjetWeb.git
+   ```
+2. **Install dependencies:**
+   ```bash
+   composer install
+   ```
+3. **Database Configuration:**
+   Execute the provided SQL script to create the user and database. Ensure the credentials match those configured in `database/database.php`.
+4. **Run Migrations:**
+   ```bash
+   composer migrate
+   ```
+5. **Server Configuration:**
+   Ensure URL rewriting is enabled on your Apache server and point the document root to the project directory.
 
-- Martin PHILIP
-- Jules PLÜSS
-- Kylian LAMBERT
-- Paul THOMAS
+## What Was Learned
+
+Building Intern Rift was a profound technical journey. It demanded mastering the complexities of a custom MVC framework from scratch rather than relying on an out-of-the-box solution like Laravel or Symfony. Implementing an ORM independently, building a secure routing system, and ensuring bulletproof input validation provided deep insights into modern web application architecture, security, and the critical importance of clean, maintainable code.
+
+---
+*Created by: Martin PHILIP, Jules PLÜSS, Kylian LAMBERT, Paul THOMAS.*
